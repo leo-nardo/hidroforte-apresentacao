@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hidroforte · O custo que ninguém mede</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@500;600;700&family=Barlow+Semi+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#10323D;--teal:#1F8FBF;--teal2:#9AD4E8;--coral:#E4572E;--gray:#5F7A82;--line:#E0E8E6;--bg:#FFFFFF}
+  *{box-sizing:border-box}
+  html{scroll-snap-type:y proximity;scrollbar-width:none;background:var(--bg)}
+  html::-webkit-scrollbar{display:none}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Barlow',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  .pg{position:relative;width:100%}
+  .snap{height:100vh;scroll-snap-align:start}
+
+  .paper{position:fixed;inset:0;z-index:0;background-color:var(--bg);
+    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:130px 130px,130px 130px;opacity:.8}
+  .paper::after{content:'';position:absolute;inset:0;
+    background-image:linear-gradient(rgba(224,232,230,.6) 1px,transparent 1px),linear-gradient(90deg,rgba(224,232,230,.6) 1px,transparent 1px);
+    background-size:26px 26px,26px 26px}
+
+  .stage{position:fixed;inset:0;z-index:2;opacity:0;pointer-events:none;will-change:opacity}
+  .wrap{position:absolute;left:7vw;top:20vh;width:min(50vw,680px);will-change:transform}
+  .tag{display:inline-flex;align-items:center;gap:13px;font-family:'Barlow Semi Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
+  .tag .num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:var(--ink);color:#fff;font-size:15px;letter-spacing:0}
+  .tag .rule{width:clamp(50px,9vw,150px);height:2px;background:var(--line)}
+  h2{font-family:'Barlow Semi Condensed','Barlow',sans-serif;font-weight:600;font-size:clamp(40px,5.9vw,100px);line-height:.97;letter-spacing:-.015em;margin:30px 0 0}
+  h2 em{position:relative;font-style:normal;color:var(--teal);white-space:nowrap}
+  h2 em .ul{position:absolute;left:-1%;width:103%;bottom:-.14em;height:.3em;color:var(--teal);overflow:visible}
+  .sub{margin:28px 0 0;max-width:42ch;font-size:clamp(16px,1.55vw,22px);line-height:1.5;font-weight:500;color:var(--gray)}
+  .sub b{color:var(--ink);font-weight:700}
+  .src{display:inline-flex;align-items:center;gap:9px;margin-top:22px;font-size:14px;font-weight:600;color:var(--gray)}
+  .src .dot{width:7px;height:7px;border-radius:50%;background:var(--teal)}
+  .src a{color:var(--teal);text-decoration:none;border-bottom:1.5px solid currentColor;pointer-events:auto}
+
+  /* staggered text entrance (opacity handled by stage) */
+  .wrap .tag,.wrap h2,.wrap .sub,.wrap .src{transform:translateY(22px);transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+  .stage.cur .tag{transform:none;transition-delay:.02s}
+  .stage.cur h2{transform:none;transition-delay:.1s}
+  .stage.cur .sub{transform:none;transition-delay:.22s}
+  .stage.cur .src{transform:none;transition-delay:.32s}
+
+  .scene{position:absolute;left:40vw;right:29vw;top:15vh;height:58vh;z-index:2;will-change:transform}
+  .scene svg{width:100%;height:100%;overflow:visible}
+
+  /* scene element animation, fired by .act */
+  .scene .in{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+  .stage.act .scene .in{opacity:1;transform:none;transition-delay:calc(var(--i,0)*.11s + .12s)}
+  .scene .draw{stroke-dasharray:1;stroke-dashoffset:1}
+  .stage.act .scene .draw{animation:drw 1s ease forwards;animation-delay:calc(var(--i,0)*.11s + .18s)}
+  @keyframes drw{to{stroke-dashoffset:0}}
+  .scene .grow{transform:scaleY(0);transform-box:fill-box;transform-origin:bottom}
+  .stage.act .scene .grow{animation:grw .6s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(var(--i,0)*.09s + .35s)}
+  @keyframes grw{to{transform:none}}
+  .pz{transform-box:fill-box;transform-origin:center;animation:pz 2.1s ease-out infinite}
+  @keyframes pz{0%{transform:scale(.7);opacity:.55}100%{transform:scale(1.65);opacity:0}}
+  .stage:not(.cur) .pz{animation-play-state:paused}
+  @media (prefers-reduced-motion:reduce){.pz{animation:none;opacity:0}}
+
+  /* persistent character (AI art, one pose per block) */
+  .hero{position:fixed;right:1vw;bottom:0;width:clamp(240px,30vw,470px);z-index:3;pointer-events:none;will-change:transform}
+  .hero .pose{position:absolute;right:0;bottom:0;width:100%;height:auto;display:block;opacity:0;transition:opacity .55s ease}
+  .pg.st1 .hero .p1{opacity:1}
+  .pg.st2 .hero .p2{opacity:1}
+  .pg.st3 .hero .p3{opacity:1}
+  .pg.st4 .hero .p3{opacity:1}
+  .pg.st5 .hero .p5{opacity:1}
+  .pg.st6 .hero .p6{opacity:1}
+
+  .rail{position:fixed;left:7vw;bottom:4.2vh;display:flex;gap:10px;z-index:6}
+  .rail button{all:unset;cursor:pointer;width:34px;height:20px;position:relative;pointer-events:auto}
+  .rail button::after{content:'';position:absolute;left:0;right:0;top:8px;height:4px;border-radius:4px;background:var(--line);transition:background .4s}
+  .rail button.done::after{background:var(--teal2)}
+  .rail button.on::after{background:var(--teal)}
+  .hint{position:fixed;right:7vw;bottom:4.6vh;font-size:14px;font-weight:600;letter-spacing:.03em;color:var(--gray);z-index:6;transition:opacity .4s}
+  .pg.started .hint{opacity:0}
+
+  @media (max-width:820px){
+    .wrap{left:7vw;right:7vw;width:auto;top:12vh}
+    .scene{display:none}
+    .hero{width:168px;right:5vw;opacity:.92}
+    h2{font-size:clamp(34px,10vw,56px)}
+  }
+</style>
+
+</head>
+<body>
+<div class="pg st1">
+
+  <div class="paper"></div>
+
+  <div class="snap"></div><div class="snap"></div><div class="snap"></div>
+  <div class="snap"></div><div class="snap"></div><div class="snap"></div>
+
+  <!-- 1 -->
+  <section class="stage">
+    <div class="wrap">
+      <div class="tag"><span class="num">1</span><span>O custo escondido</span><span class="rule"></span></div>
+      <h2>Quanto custa um software <em>padrão?<svg class="ul" viewBox="0 0 200 14" preserveAspectRatio="none" aria-hidden="true"><path d="M4 9 C60 3 150 3 196 8" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></em></h2>
+      <p class="sub">Feito longe de quem vive a operação — por gente que não conhece as nossas dores.</p>
+    </div>
+    <div class="scene">
+      <svg viewBox="0 0 520 440" aria-hidden="true">
+        <rect class="draw" pathLength="1" x="18" y="150" width="150" height="120" rx="12" fill="#fff" stroke="#10323D" stroke-width="4"/>
+        <circle class="in" cx="36" cy="164" r="4" fill="#CAD6D4"/><circle class="in" cx="50" cy="164" r="4" fill="#CAD6D4"/>
+        <g class="in" style="--i:1" stroke="#CAD6D4" stroke-width="6" stroke-linecap="round">
+          <line x1="40" y1="206" x2="146" y2="206"/><line x1="40" y1="228" x2="120" y2="228"/><line x1="40" y1="250" x2="134" y2="250"/>
+        </g>
+        <text class="in" style="--i:1" x="93" y="305" text-anchor="middle" font-family="Barlow" font-size="16" font-weight="600" fill="#5F7A82">software padrão</text>
+        <path class="draw" pathLength="1" style="--i:2" d="M188 210 H300" stroke="#10323D" stroke-width="3" stroke-dasharray="8 10" stroke-linecap="round"/>
+        <text class="in" style="--i:2" x="244" y="196" text-anchor="middle" font-family="Barlow Semi Condensed" font-style="italic" font-size="22" fill="#10323D">longe</text>
+        <rect class="draw" pathLength="1" style="--i:2" x="322" y="150" width="178" height="130" rx="16" fill="#fff" stroke="#10323D" stroke-width="5"/>
+        <text class="in" style="--i:3" x="346" y="214" font-family="Barlow Semi Condensed" font-size="40" font-weight="700" fill="#10323D">R$</text>
+        <line class="in" style="--i:3" x1="405" y1="196" x2="476" y2="196" stroke="#10323D" stroke-width="7" stroke-linecap="round"/>
+        <text class="in" style="--i:3" x="346" y="252" font-family="Barlow" font-size="15" font-weight="600" fill="#5F7A82">assinatura mensal</text>
+        <path class="draw" pathLength="1" style="--i:4" d="M411 128 V70 M388 94 L411 68 L434 94" fill="none" stroke="#E4572E" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="stage">
+    <div class="wrap">
+      <div class="tag"><span class="num">2</span><span>A conta dobrada</span><span class="rule"></span></div>
+      <h2>Na assinatura. E de novo no <em>retrabalho.<svg class="ul" viewBox="0 0 200 14" preserveAspectRatio="none" aria-hidden="true"><path d="M4 9 C60 3 150 3 196 8" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></em></h2>
+      <p class="sub">Fazer o nosso era caro e lento — <b>até a IA mudar isso.</b> Em 2026, 32% das organizações já deixaram de comprar software para construí-lo.</p>
+      <div class="src"><span class="dot"></span><span>Fonte: <a href="https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai" target="_blank" rel="noopener">McKinsey — The State of AI, 2026</a></span></div>
+    </div>
+    <div class="scene">
+      <svg viewBox="0 0 520 440" aria-hidden="true">
+        <text id="pct" x="255" y="150" text-anchor="middle" font-family="Barlow Semi Condensed" font-size="150" font-weight="700" fill="#1F8FBF">0%</text>
+        <line class="in" x1="40" y1="360" x2="480" y2="360" stroke="#E0E8E6" stroke-width="3"/>
+        <line class="in" x1="40" y1="200" x2="480" y2="200" stroke="#E0E8E6" stroke-width="3"/>
+        <path class="draw" pathLength="1" style="--i:1" d="M60 350 C180 330 320 250 470 220" fill="none" stroke="#E4572E" stroke-width="6" stroke-linecap="round"/>
+        <path class="draw" pathLength="1" style="--i:2" d="M60 230 C200 250 330 330 470 352" fill="none" stroke="#1F8FBF" stroke-width="6" stroke-linecap="round"/>
+        <circle class="pz" cx="265" cy="291" r="12" fill="#1F8FBF"/>
+        <circle class="in" style="--i:3" cx="265" cy="291" r="9" fill="#fff" stroke="#10323D" stroke-width="4"/>
+        <text class="in" style="--i:2" x="476" y="212" text-anchor="end" font-family="Barlow" font-size="15" font-weight="700" fill="#E4572E">comprar</text>
+        <text class="in" style="--i:2" x="476" y="376" text-anchor="end" font-family="Barlow" font-size="15" font-weight="700" fill="#1F8FBF">construir</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="stage">
+    <div class="wrap">
+      <div class="tag"><span class="num">3</span><span>A prova</span><span class="rule"></span></div>
+      <h2>O nosso já existe: o <em>HF+.<svg class="ul" viewBox="0 0 200 14" preserveAspectRatio="none" aria-hidden="true"><path d="M4 9 C60 3 150 3 196 8" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></em></h2>
+      <p class="sub">Feito aqui dentro, por quem vive o problema. Já traz resultado para a operação — <b>uma ferramenta, um setor.</b> Só uma amostra.</p>
+    </div>
+    <div class="scene">
+      <svg viewBox="0 0 520 440" aria-hidden="true">
+        <rect class="draw" pathLength="1" x="78" y="58" width="364" height="238" rx="18" fill="#fff" stroke="#10323D" stroke-width="6"/>
+        <path class="draw" pathLength="1" d="M78 98 H442" fill="none" stroke="#10323D" stroke-width="5"/>
+        <circle class="in" cx="104" cy="78" r="5" fill="#9AD4E8"/><circle class="in" cx="120" cy="78" r="5" fill="#9AD4E8"/><circle class="in" cx="136" cy="78" r="5" fill="#9AD4E8"/>
+        <path class="draw" pathLength="1" style="--i:1" d="M172 98 V296" stroke="#E0E8E6" stroke-width="4"/>
+        <g class="in" style="--i:1" stroke="#D6E0DE" stroke-width="6" stroke-linecap="round"><path d="M126 138 h30"/><path d="M126 168 h30"/><path d="M126 198 h30"/></g>
+        <text class="in" style="--i:2" x="306" y="168" text-anchor="middle" font-family="Barlow Semi Condensed" font-size="60" font-weight="700" fill="#1F8FBF">HF+</text>
+        <g class="in" style="--i:3" stroke="#CAD6D4" stroke-width="6" stroke-linecap="round"><path d="M200 212 h150"/><path d="M200 234 h186"/><path d="M200 256 h120"/></g>
+        <g style="--i:3"><rect class="grow" style="--i:0" x="356" y="214" width="16" height="46" rx="3" fill="#9AD4E8"/><rect class="grow" style="--i:1" x="378" y="196" width="16" height="64" rx="3" fill="#1F8FBF"/><rect class="grow" style="--i:2" x="400" y="226" width="16" height="34" rx="3" fill="#9AD4E8"/></g>
+        <path class="draw" pathLength="1" style="--i:3" d="M236 296 h48 v26 h34 v10 h-116 v-10 h34 z" fill="#fff" stroke="#10323D" stroke-width="5" stroke-linejoin="round"/>
+        <g class="in" style="--i:4" stroke="#1F8FBF" stroke-width="5" stroke-linecap="round"><path d="M462 86 v22 M451 97 h22"/></g>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="stage">
+    <div class="wrap">
+      <div class="tag"><span class="num">4</span><span>Dentro de casa</span><span class="rule"></span></div>
+      <h2>E não para na <em>operação.<svg class="ul" viewBox="0 0 200 14" preserveAspectRatio="none" aria-hidden="true"><path d="M4 9 C60 3 150 3 196 8" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></em></h2>
+      <p class="sub">Faturamento, comercial, cobrança, atendimento — <b>vários setores com as mesmas dores</b> a resolver, aqui dentro.</p>
+    </div>
+    <div class="scene">
+      <svg viewBox="0 0 520 440" aria-hidden="true">
+        <path class="draw" pathLength="1" style="--i:1" d="M255 220 L130 110 M255 220 L395 112 M255 220 L128 338 M255 220 L398 332" fill="none" stroke="#CAD6D4" stroke-width="3"/>
+        <circle class="pz" cx="255" cy="220" r="30" fill="#1F8FBF"/>
+        <circle class="in" cx="255" cy="220" r="32" fill="#1F8FBF"/>
+        <path class="in" d="M242 220 h26 M255 207 v26" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+        <g font-family="Barlow" font-size="16" font-weight="600" fill="#10323D">
+          <g class="in" style="--i:2"><rect x="56" y="80" width="140" height="56" rx="14" fill="#fff" stroke="#10323D" stroke-width="4"/><text x="126" y="114" text-anchor="middle">faturamento</text></g>
+          <g class="in" style="--i:3"><rect x="326" y="82" width="150" height="56" rx="14" fill="#fff" stroke="#10323D" stroke-width="4"/><text x="401" y="116" text-anchor="middle">comercial</text></g>
+          <g class="in" style="--i:4"><rect x="54" y="308" width="134" height="56" rx="14" fill="#fff" stroke="#10323D" stroke-width="4"/><text x="121" y="342" text-anchor="middle">cobrança</text></g>
+          <g class="in" style="--i:5"><rect x="324" y="302" width="158" height="56" rx="14" fill="#fff" stroke="#10323D" stroke-width="4"/><text x="403" y="336" text-anchor="middle">atendimento</text></g>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="stage">
+    <div class="wrap">
+      <div class="tag"><span class="num">5</span><span>O ecossistema</span><span class="rule"></span></div>
+      <h2>O que entendemos, <em>poucos entendem.<svg class="ul" viewBox="0 0 200 14" preserveAspectRatio="none" aria-hidden="true"><path d="M4 9 C60 3 150 3 196 8" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></em></h2>
+      <p class="sub">As mesmas dores existem em todo o ecossistema de saneamento. Daí não nasce só economia — nascem <b>novos negócios para o grupo.</b></p>
+    </div>
+    <div class="scene">
+      <svg viewBox="0 0 520 440" aria-hidden="true">
+        <path class="draw" pathLength="1" style="--i:1" d="M120 300 L250 160 M250 160 L390 300 M120 300 L390 300" fill="none" stroke="#CAD6D4" stroke-width="3"/>
+        <g class="in" style="--i:2"><rect x="86" y="276" width="70" height="70" rx="10" fill="#fff" stroke="#10323D" stroke-width="5"/><path d="M104 300 h34 M104 318 h22" stroke="#10323D" stroke-width="4" stroke-linecap="round"/></g>
+        <g class="in" style="--i:3"><rect x="356" y="276" width="70" height="70" rx="10" fill="#fff" stroke="#10323D" stroke-width="5"/><path d="M374 300 h34 M374 318 h22" stroke="#10323D" stroke-width="4" stroke-linecap="round"/></g>
+        <circle class="pz" cx="250" cy="160" r="30" fill="#1F8FBF"/>
+        <circle class="in" style="--i:1" cx="250" cy="160" r="30" fill="#1F8FBF"/>
+        <path class="in" style="--i:1" d="M238 160 l9 9 l17 -18" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        <g class="in" style="--i:4" transform="translate(300,100)"><rect x="0" y="0" width="190" height="46" rx="23" fill="#10323D"/><text x="95" y="30" text-anchor="middle" font-family="Barlow Semi Condensed" font-size="18" font-weight="600" fill="#fff">novos negócios</text></g>
+      </svg>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="stage">
+    <div class="wrap">
+      <div class="tag"><span class="num">6</span><span>A oportunidade</span><span class="rule"></span></div>
+      <h2>O HF+ foi só uma <em>amostra.<svg class="ul" viewBox="0 0 200 14" preserveAspectRatio="none" aria-hidden="true"><path d="M4 9 C60 3 150 3 196 8" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></em></h2>
+      <p class="sub">A partir daqui, quase tudo é possível. Uma ferramenta já mudou um setor — <b>o conjunto é a oportunidade.</b></p>
+    </div>
+    <div class="scene">
+      <svg viewBox="0 0 520 440" aria-hidden="true">
+        <path class="draw" pathLength="1" style="--i:1" d="M90 120 L250 220 M250 220 L430 110 M250 220 L150 350 M250 220 L410 330 M250 220 L250 60" fill="none" stroke="#CAD6D4" stroke-width="2.5"/>
+        <circle class="pz" cx="250" cy="220" r="22" fill="#1F8FBF"/>
+        <circle class="in" style="--i:1" cx="250" cy="220" r="20" fill="#1F8FBF"/>
+        <g class="in" style="--i:2"><circle cx="90" cy="120" r="12" fill="#10323D"/><circle cx="430" cy="110" r="12" fill="#10323D"/></g>
+        <g class="in" style="--i:3"><circle cx="150" cy="350" r="12" fill="#10323D"/><circle cx="410" cy="330" r="12" fill="#10323D"/></g>
+        <circle class="in" style="--i:4" cx="250" cy="60" r="12" fill="#1F8FBF"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- persistent character (AI-generated poses) -->
+  <div class="hero">
+    <img class="pose p1" src="assets/1_pensa.png" alt="">
+    <img class="pose p2" src="assets/2_aponta.png" alt="">
+    <img class="pose p3" src="assets/3_apresenta.png" alt="">
+    <img class="pose p5" src="assets/5_neutro.png" alt="">
+    <img class="pose p6" src="assets/6_joinha.png" alt="">
+  </div>
+
+  <div class="rail">
+    <button type="button" aria-label="1"></button><button type="button" aria-label="2"></button><button type="button" aria-label="3"></button>
+    <button type="button" aria-label="4"></button><button type="button" aria-label="5"></button><button type="button" aria-label="6"></button>
+  </div>
+  <div class="hint">role para seguir ↓</div>
+
+</div>
+<script>
+(function(){
+
+    var pg = document.querySelector('.pg');
+    var stages = Array.prototype.slice.call(document.querySelectorAll('.stage'));
+    var rail = Array.prototype.slice.call(document.querySelectorAll('.rail button'));
+    var hero = document.querySelector('.hero');
+    var pct = document.getElementById('pct');
+    var N = stages.length;
+    var acted = [];
+    var countStarted = false;
+
+    function countUp() {
+      if (countStarted || !pct) return; countStarted = true;
+      var t0 = null;
+      function step(ts) {
+        if (!t0) t0 = ts;
+        var k = Math.min(1, (ts - t0) / 1100);
+        pct.textContent = Math.round((1 - Math.pow(1 - k, 3)) * 32) + '%';
+        if (k < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    for (var r = 0; r < rail.length; r++) {
+      (function (idx) {
+        rail[idx].addEventListener('click', function () {
+          window.scrollTo({ top: idx * window.innerHeight, behavior: 'smooth' });
+        });
+      })(r);
+    }
+
+    function frame() {
+      var vh = window.innerHeight || 1;
+      var p = window.scrollY / vh;
+      var idx = Math.round(p); if (idx < 0) idx = 0; if (idx > N - 1) idx = N - 1;
+      var tms = (typeof performance !== 'undefined' ? performance.now() : Date.now()) / 1000;
+      for (var i = 0; i < N; i++) {
+        var d = p - i; var ad = d < 0 ? -d : d;
+        var st = stages[i];
+        var vis = 1 - ad * 1.25; if (vis < 0) vis = 0; if (vis > 1) vis = 1;
+        st.style.opacity = vis;
+        var wrap = st.querySelector('.wrap');
+        var scene = st.querySelector('.scene');
+        if (wrap) wrap.style.transform = 'translateY(' + (d * -48) + 'px)';
+        if (scene) scene.style.transform = 'translate(' + (d * 74) + 'px,' + (d * -20) + 'px) scale(' + (0.92 + 0.08 * vis) + ')';
+        st.classList.toggle('cur', i === idx);
+        if (i === idx && !acted[i]) { acted[i] = true; st.classList.add('act'); if (i === 1) countUp(); }
+      }
+      for (var k = 1; k <= N; k++) { pg.classList.toggle('st' + k, k === idx + 1); }
+      pg.classList.toggle('started', p > 0.25);
+      if (hero) {
+        var frac = p - idx;
+        var bx = Math.sin(p * 0.8) * 12;
+        var by = Math.cos(p * 1.3) * -6 + Math.sin(tms * 1.4) * 3;
+        hero.style.transform = 'translate(' + bx + 'px,' + by + 'px) rotate(' + (frac * 2.2) + 'deg)';
+      }
+      for (var r2 = 0; r2 < rail.length; r2++) {
+        rail[r2].classList.toggle('on', r2 === idx);
+        rail[r2].classList.toggle('done', r2 < idx);
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

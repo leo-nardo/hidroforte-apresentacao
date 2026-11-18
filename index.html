@@ -11,11 +11,10 @@
 <style>
   :root{--ink:#10323D;--teal:#1F8FBF;--teal2:#9AD4E8;--coral:#E4572E;--gray:#5F7A82;--line:#E0E8E6;--bg:#FFFFFF}
   *{box-sizing:border-box}
-  html{scroll-snap-type:y proximity;scrollbar-width:none;background:var(--bg)}
-  html::-webkit-scrollbar{display:none}
+  html,body{height:100%;overflow:hidden}
+  html{background:var(--bg)}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:'Barlow',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
   .pg{position:relative;width:100%}
-  .snap{height:100vh;scroll-snap-align:start}
 
   .paper{position:fixed;inset:0;z-index:0;background-color:var(--bg);
     background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
@@ -24,12 +23,14 @@
     background-image:linear-gradient(rgba(224,232,230,.6) 1px,transparent 1px),linear-gradient(90deg,rgba(224,232,230,.6) 1px,transparent 1px);
     background-size:26px 26px,26px 26px}
 
-  .stage{position:fixed;inset:0;z-index:2;opacity:0;pointer-events:none;will-change:opacity}
-  .wrap{position:absolute;left:7vw;top:20vh;width:min(50vw,680px);will-change:transform}
+  .stage{position:fixed;inset:0;z-index:2;opacity:0;pointer-events:none;transition:opacity .22s ease}
+  .stage.cur{opacity:1;transition:opacity .4s ease .12s}
+  .stage.cur .src a{pointer-events:auto}
+  .wrap{position:absolute;left:7vw;top:20vh;width:min(44vw,720px)}
   .tag{display:inline-flex;align-items:center;gap:13px;font-family:'Barlow Semi Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
   .tag .num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:var(--ink);color:#fff;font-size:15px;letter-spacing:0}
   .tag .rule{width:clamp(50px,9vw,150px);height:2px;background:var(--line)}
-  h2{font-family:'Barlow Semi Condensed','Barlow',sans-serif;font-weight:600;font-size:clamp(40px,5.9vw,100px);line-height:.97;letter-spacing:-.015em;margin:30px 0 0}
+  h2{font-family:'Barlow Semi Condensed','Barlow',sans-serif;font-weight:600;font-size:clamp(38px,4.9vw,86px);line-height:.97;letter-spacing:-.015em;margin:30px 0 0}
   h2 em{position:relative;font-style:normal;color:var(--teal);white-space:nowrap}
   h2 em .ul{position:absolute;left:-1%;width:103%;bottom:-.14em;height:.3em;color:var(--teal);overflow:visible}
   .sub{margin:28px 0 0;max-width:42ch;font-size:clamp(16px,1.55vw,22px);line-height:1.5;font-weight:500;color:var(--gray)}
@@ -45,7 +46,7 @@
   .stage.cur .sub{transform:none;transition-delay:.22s}
   .stage.cur .src{transform:none;transition-delay:.32s}
 
-  .scene{position:absolute;left:40vw;right:29vw;top:15vh;height:58vh;z-index:2;will-change:transform}
+  .scene{position:absolute;left:55vw;right:4vw;top:8vh;height:46vh;z-index:2}
   .scene svg{width:100%;height:100%;overflow:visible}
 
   /* scene element animation, fired by .act */
@@ -63,7 +64,8 @@
   @media (prefers-reduced-motion:reduce){.pz{animation:none;opacity:0}}
 
   /* persistent character (AI art, one pose per block) */
-  .hero{position:fixed;right:1vw;bottom:0;width:clamp(240px,30vw,470px);z-index:3;pointer-events:none;will-change:transform}
+  .hero{position:fixed;right:1vw;bottom:0;width:clamp(240px,30vw,470px);z-index:3;pointer-events:none;animation:flt 5s ease-in-out infinite}
+  @keyframes flt{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
   .hero .pose{position:absolute;right:0;bottom:0;width:100%;height:auto;display:block;opacity:0;transition:opacity .55s ease}
   .pg.st1 .hero .p1{opacity:1}
   .pg.st2 .hero .p2{opacity:1}
@@ -77,7 +79,7 @@
   .rail button::after{content:'';position:absolute;left:0;right:0;top:8px;height:4px;border-radius:4px;background:var(--line);transition:background .4s}
   .rail button.done::after{background:var(--teal2)}
   .rail button.on::after{background:var(--teal)}
-  .hint{position:fixed;right:7vw;bottom:4.6vh;font-size:14px;font-weight:600;letter-spacing:.03em;color:var(--gray);z-index:6;transition:opacity .4s}
+  .hint{position:fixed;left:calc(7vw + 270px);bottom:4.6vh;font-size:14px;font-weight:600;letter-spacing:.03em;color:var(--gray);z-index:6;transition:opacity .4s}
   .pg.started .hint{opacity:0}
 
   @media (max-width:820px){
@@ -94,8 +96,6 @@
 
   <div class="paper"></div>
 
-  <div class="snap"></div><div class="snap"></div><div class="snap"></div>
-  <div class="snap"></div><div class="snap"></div><div class="snap"></div>
 
   <!-- 1 -->
   <section class="stage">
@@ -249,68 +249,70 @@
 </div>
 <script>
 (function(){
+  var pg = document.querySelector('.pg');
+  var stages = Array.prototype.slice.call(document.querySelectorAll('.stage'));
+  var rail = Array.prototype.slice.call(document.querySelectorAll('.rail button'));
+  var pct = document.getElementById('pct');
+  var N = stages.length, cur = -1, countRun = 0, lockUntil = 0, timers = [];
 
-    var pg = document.querySelector('.pg');
-    var stages = Array.prototype.slice.call(document.querySelectorAll('.stage'));
-    var rail = Array.prototype.slice.call(document.querySelectorAll('.rail button'));
-    var hero = document.querySelector('.hero');
-    var pct = document.getElementById('pct');
-    var N = stages.length;
-    var acted = [];
-    var countStarted = false;
-
-    function countUp() {
-      if (countStarted || !pct) return; countStarted = true;
-      var t0 = null;
-      function step(ts) {
-        if (!t0) t0 = ts;
-        var k = Math.min(1, (ts - t0) / 1100);
-        pct.textContent = Math.round((1 - Math.pow(1 - k, 3)) * 32) + '%';
-        if (k < 1) requestAnimationFrame(step);
-      }
-      requestAnimationFrame(step);
+  function countUp() {
+    if (!pct) return;
+    var id = ++countRun, t0 = null;
+    pct.textContent = '0%';
+    function step(ts) {
+      if (id !== countRun) return;
+      if (!t0) t0 = ts;
+      var k = Math.min(1, (ts - t0) / 1100);
+      pct.textContent = Math.round((1 - Math.pow(1 - k, 3)) * 32) + '%';
+      if (k < 1) requestAnimationFrame(step);
     }
+    requestAnimationFrame(step);
+  }
 
-    for (var r = 0; r < rail.length; r++) {
-      (function (idx) {
-        rail[idx].addEventListener('click', function () {
-          window.scrollTo({ top: idx * window.innerHeight, behavior: 'smooth' });
-        });
-      })(r);
+  function go(i) {
+    if (i < 0) i = 0; if (i > N - 1) i = N - 1;
+    if (i === cur) return;
+    var prev = cur; cur = i;
+    for (var s = 0; s < N; s++) {
+      var on = s === i;
+      stages[s].classList.toggle('cur', on);
+      if (on) { clearTimeout(timers[s]); stages[s].classList.add('act'); }
+      else if (stages[s].classList.contains('act')) {
+        (function (st, idx) { clearTimeout(timers[idx]); timers[idx] = setTimeout(function () { if (idx !== cur) st.classList.remove('act'); }, 600); })(stages[s], s);
+      }
     }
+    for (var k = 1; k <= N; k++) pg.classList.toggle('st' + k, k === i + 1);
+    pg.classList.toggle('started', i > 0);
+    for (var r = 0; r < rail.length; r++) { rail[r].classList.toggle('on', r === i); rail[r].classList.toggle('done', r < i); }
+    if (i === 1) countUp();
+  }
+  function step(d) { go(cur + d); }
 
-    function frame() {
-      var vh = window.innerHeight || 1;
-      var p = window.scrollY / vh;
-      var idx = Math.round(p); if (idx < 0) idx = 0; if (idx > N - 1) idx = N - 1;
-      var tms = (typeof performance !== 'undefined' ? performance.now() : Date.now()) / 1000;
-      for (var i = 0; i < N; i++) {
-        var d = p - i; var ad = d < 0 ? -d : d;
-        var st = stages[i];
-        var vis = 1 - ad * 1.25; if (vis < 0) vis = 0; if (vis > 1) vis = 1;
-        st.style.opacity = vis;
-        var wrap = st.querySelector('.wrap');
-        var scene = st.querySelector('.scene');
-        if (wrap) wrap.style.transform = 'translateY(' + (d * -48) + 'px)';
-        if (scene) scene.style.transform = 'translate(' + (d * 74) + 'px,' + (d * -20) + 'px) scale(' + (0.92 + 0.08 * vis) + ')';
-        st.classList.toggle('cur', i === idx);
-        if (i === idx && !acted[i]) { acted[i] = true; st.classList.add('act'); if (i === 1) countUp(); }
-      }
-      for (var k = 1; k <= N; k++) { pg.classList.toggle('st' + k, k === idx + 1); }
-      pg.classList.toggle('started', p > 0.25);
-      if (hero) {
-        var frac = p - idx;
-        var bx = Math.sin(p * 0.8) * 12;
-        var by = Math.cos(p * 1.3) * -6 + Math.sin(tms * 1.4) * 3;
-        hero.style.transform = 'translate(' + bx + 'px,' + by + 'px) rotate(' + (frac * 2.2) + 'deg)';
-      }
-      for (var r2 = 0; r2 < rail.length; r2++) {
-        rail[r2].classList.toggle('on', r2 === idx);
-        rail[r2].classList.toggle('done', r2 < idx);
-      }
-      requestAnimationFrame(frame);
-    }
-    requestAnimationFrame(frame);
+  window.addEventListener('keydown', function (e) {
+    var k = e.key;
+    if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' || k === ' ') { e.preventDefault(); step(1); }
+    else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp') { e.preventDefault(); step(-1); }
+    else if (k === 'Home') { e.preventDefault(); go(0); }
+    else if (k === 'End') { e.preventDefault(); go(N - 1); }
+  });
+  window.addEventListener('wheel', function (e) {
+    e.preventDefault();
+    var now = Date.now();
+    if (now < lockUntil) { lockUntil = Math.max(lockUntil, now + 140); return; }
+    if (Math.abs(e.deltaY) < 8) return;
+    step(e.deltaY > 0 ? 1 : -1);
+    lockUntil = now + 650;
+  }, { passive: false });
+  var ty = null;
+  window.addEventListener('touchstart', function (e) { ty = e.touches[0].clientY; }, { passive: true });
+  window.addEventListener('touchend', function (e) {
+    if (ty === null) return;
+    var d = ty - e.changedTouches[0].clientY; ty = null;
+    if (Math.abs(d) > 50) step(d > 0 ? 1 : -1);
+  }, { passive: true });
+  for (var r = 0; r < rail.length; r++) (function (idx) { rail[idx].addEventListener('click', function () { go(idx); }); })(r);
+
+  go(0);
 })();
 </script>
 </body>

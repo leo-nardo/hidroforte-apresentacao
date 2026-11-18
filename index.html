@@ -57,10 +57,13 @@
   .stage.act .scene .in{opacity:1;transform:none;transition-delay:calc(var(--i,0)*.11s + .12s)}
   .scene .draw{stroke-dasharray:1;stroke-dashoffset:1}
   .stage.act .scene .draw{animation:drw 1s ease forwards;animation-delay:calc(var(--i,0)*.11s + .18s)}
-  @keyframes drw{to{stroke-dashoffset:0}}
+  @keyframes drw{0%{stroke-dashoffset:1;stroke-dasharray:1}99%{stroke-dashoffset:0;stroke-dasharray:1}100%{stroke-dashoffset:0;stroke-dasharray:none}}
   .scene .grow{transform:scaleY(0);transform-box:fill-box;transform-origin:bottom}
   .stage.act .scene .grow{animation:grw .6s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(var(--i,0)*.09s + .35s)}
   @keyframes grw{to{transform:none}}
+  .bump{transform-box:fill-box;animation:bmp 2.6s ease-in-out 1.6s infinite}
+  @keyframes bmp{0%,100%{transform:translateX(0)}12%{transform:translateX(12px)}24%{transform:translateX(0)}36%{transform:translateX(8px)}48%{transform:translateX(0)}}
+  .stage:not(.cur) .bump{animation-play-state:paused}
   .pz{transform-box:fill-box;transform-origin:center;animation:pz 2.1s ease-out infinite}
   @keyframes pz{0%{transform:scale(.7);opacity:.55}100%{transform:scale(1.65);opacity:0}}
   .stage:not(.cur) .pz{animation-play-state:paused}
@@ -106,19 +109,39 @@
     </div>
     <div class="scene">
       <svg viewBox="0 0 520 440" aria-hidden="true">
-        <rect class="draw" pathLength="1" x="18" y="150" width="150" height="120" rx="12" fill="#fff" stroke="#10323D" stroke-width="4"/>
-        <circle class="in" cx="36" cy="164" r="4" fill="#CAD6D4"/><circle class="in" cx="50" cy="164" r="4" fill="#CAD6D4"/>
-        <g class="in" style="--i:1" stroke="#CAD6D4" stroke-width="6" stroke-linecap="round">
-          <line x1="40" y1="206" x2="146" y2="206"/><line x1="40" y1="228" x2="120" y2="228"/><line x1="40" y1="250" x2="134" y2="250"/>
+        <!-- quem desenvolve: longe -->
+        <g class="in" style="--i:0" opacity=".55">
+          <rect x="22" y="318" width="26" height="44" rx="3" fill="#fff" stroke="#10323D" stroke-width="3.5"/>
+          <rect x="52" y="298" width="30" height="64" rx="3" fill="#fff" stroke="#10323D" stroke-width="3.5"/>
+          <rect x="86" y="326" width="22" height="36" rx="3" fill="#fff" stroke="#10323D" stroke-width="3.5"/>
+          <path d="M14 362 H118" stroke="#10323D" stroke-width="3.5" stroke-linecap="round"/>
         </g>
-        <text class="in" style="--i:1" x="93" y="305" text-anchor="middle" font-family="Barlow" font-size="16" font-weight="600" fill="#5F7A82">software padrão</text>
-        <path class="draw" pathLength="1" style="--i:2" d="M188 210 H300" stroke="#10323D" stroke-width="3" stroke-dasharray="8 10" stroke-linecap="round"/>
-        <text class="in" style="--i:2" x="244" y="196" text-anchor="middle" font-family="Barlow Semi Condensed" font-style="italic" font-size="22" fill="#10323D">longe</text>
-        <rect class="draw" pathLength="1" style="--i:2" x="322" y="150" width="178" height="130" rx="16" fill="#fff" stroke="#10323D" stroke-width="5"/>
-        <text class="in" style="--i:3" x="346" y="214" font-family="Barlow Semi Condensed" font-size="40" font-weight="700" fill="#10323D">R$</text>
-        <line class="in" style="--i:3" x1="405" y1="196" x2="476" y2="196" stroke="#10323D" stroke-width="7" stroke-linecap="round"/>
-        <text class="in" style="--i:3" x="346" y="252" font-family="Barlow" font-size="15" font-weight="600" fill="#5F7A82">assinatura mensal</text>
-        <path class="draw" pathLength="1" style="--i:4" d="M411 128 V70 M388 94 L411 68 L434 94" fill="none" stroke="#E4572E" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+        <text class="in" style="--i:0" x="66" y="392" text-anchor="middle" font-family="Barlow" font-size="15" font-weight="600" fill="#5F7A82">quem desenvolve</text>
+        <path class="draw" pathLength="1" style="--i:1" d="M64 292 C86 196 138 168 188 208" fill="none" stroke="#10323D" stroke-width="3.5" stroke-dasharray="1" stroke-linecap="round"/>
+        <text class="in" style="--i:2" x="92" y="176" text-anchor="middle" font-family="Barlow Semi Condensed" font-style="italic" font-size="24" font-weight="600" fill="#10323D">longe</text>
+
+        <!-- a nossa operação: o formato que só a gente conhece -->
+        <rect class="draw" pathLength="1" style="--i:3" x="306" y="128" width="196" height="196" rx="20" fill="#fff" stroke="#10323D" stroke-width="5"/>
+        <path class="in" style="--i:4" d="M356 214 L384 192 L402 210 L436 194 L452 228 L432 246 L450 276 L408 288 L386 268 L356 282 L370 246 Z" fill="#9AD4E8" fill-opacity=".45" stroke="#1F8FBF" stroke-width="4" stroke-dasharray="9 7" stroke-linejoin="round"/>
+        <text class="in" style="--i:4" x="404" y="352" text-anchor="middle" font-family="Barlow" font-size="16" font-weight="700" fill="#1F8FBF">a nossa operação</text>
+
+        <!-- software padrão: formato genérico, não encaixa -->
+        <g class="in" style="--i:2">
+          <g class="bump">
+            <g transform="rotate(-5 230 240)">
+              <rect x="166" y="196" width="120" height="96" rx="14" fill="#fff" stroke="#10323D" stroke-width="5"/>
+              <path d="M166 224 H286" stroke="#10323D" stroke-width="4"/>
+              <circle cx="182" cy="210" r="4" fill="#CAD6D4"/><circle cx="196" cy="210" r="4" fill="#CAD6D4"/>
+              <g stroke="#CAD6D4" stroke-width="6" stroke-linecap="round"><path d="M182 246 h70"/><path d="M182 262 h50"/><path d="M182 278 h62"/></g>
+            </g>
+          </g>
+        </g>
+        <text class="in" style="--i:2" x="226" y="324" text-anchor="middle" font-family="Barlow" font-size="15" font-weight="600" fill="#5F7A82">software padrão</text>
+        <g class="in" style="--i:5">
+          <circle cx="288" cy="198" r="17" fill="#E4572E"/>
+          <text x="288" y="204" text-anchor="middle" font-family="Barlow Semi Condensed" font-size="17" font-weight="700" fill="#fff">R$</text>
+        </g>
+        <text class="in" style="--i:6" x="300" y="112" text-anchor="middle" font-family="Barlow Semi Condensed" font-style="italic" font-size="24" font-weight="600" fill="#E4572E">não encaixa</text>
       </svg>
     </div>
   </section>
@@ -127,7 +150,7 @@
   <section class="stage">
     <div class="wrap">
       <h2>Custa na assinatura. E de novo no <em>retrabalho.<svg class="ul" viewBox="0 0 200 14" preserveAspectRatio="none" aria-hidden="true"><path d="M4 9 C60 3 150 3 196 8" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></em></h2>
-      <p class="sub">Fazer o nosso era caro e lento, <b>até a IA mudar isso.</b> Em 2026, 32% das organizações já deixaram de comprar software para construí-lo.</p>
+      <p class="sub">Fazer um software sob medida era caro e demorado, <b>até a IA mudar isso.</b> Em 2026, 32% das organizações já passaram a construir alguns dos seus próprios softwares, em vez de comprá-los.</p>
       <div class="src"><span class="dot"></span><span>Fonte: <a href="https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai" target="_blank" rel="noopener">McKinsey, The State of AI, 2026</a></span></div>
     </div>
     <div class="scene">
@@ -171,7 +194,7 @@
   <section class="stage">
     <div class="wrap">
       <h2>E não para na <em>operação.<svg class="ul" viewBox="0 0 200 14" preserveAspectRatio="none" aria-hidden="true"><path d="M4 9 C60 3 150 3 196 8" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></em></h2>
-      <p class="sub">Financeiro, jurídico, engenharia e comercial. São <b>vários setores com muito a ganhar</b> quando têm as ferramentas certas.</p>
+      <p class="sub">Financeiro, jurídico, engenharia e comercial. São <b>vários setores com muito a ganhar</b> quando tiverem as ferramentas certas.</p>
     </div>
     <div class="scene">
       <svg viewBox="0 0 520 440" aria-hidden="true">

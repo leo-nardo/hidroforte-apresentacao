@@ -46,6 +46,9 @@
   .stage.cur .sub{transform:none;transition-delay:.22s}
   .stage.cur .src{transform:none;transition-delay:.32s}
 
+  .cover .wrap{top:50%;transform:translateY(-58%);width:min(50vw,760px)}
+  .cover h2{margin:0;font-size:clamp(44px,6.4vw,112px);line-height:.95}
+  .cover .scene{left:54vw;right:5vw;top:9vh;height:48vh}
   .scene{position:absolute;left:55vw;right:4vw;top:8vh;height:46vh;z-index:2}
   .scene svg{width:100%;height:100%;overflow:visible}
 
@@ -64,8 +67,7 @@
   @media (prefers-reduced-motion:reduce){.pz{animation:none;opacity:0}}
 
   /* persistent character (AI art, one pose per block) */
-  .hero{position:fixed;right:1vw;bottom:0;width:clamp(240px,30vw,470px);z-index:3;pointer-events:none;animation:flt 5s ease-in-out infinite}
-  @keyframes flt{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  .hero{position:fixed;right:1vw;bottom:0;width:clamp(240px,30vw,470px);z-index:3;pointer-events:none}
   .hero .pose{position:absolute;right:0;bottom:0;width:100%;height:auto;display:block;opacity:0;transition:opacity .55s ease}
   .pg.st1 .hero .p1{opacity:1}
   .pg.st2 .hero .p2{opacity:1}
@@ -98,11 +100,9 @@
 
 
   <!-- 1 -->
-  <section class="stage">
+  <section class="stage cover">
     <div class="wrap">
-      <div class="tag"><span class="num">1</span><span>O custo escondido</span><span class="rule"></span></div>
       <h2>Quanto custa um software <em>padrão?<svg class="ul" viewBox="0 0 200 14" preserveAspectRatio="none" aria-hidden="true"><path d="M4 9 C60 3 150 3 196 8" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></em></h2>
-      <p class="sub">Feito longe de quem vive a operação — por gente que não conhece as nossas dores.</p>
     </div>
     <div class="scene">
       <svg viewBox="0 0 520 440" aria-hidden="true">
@@ -126,10 +126,9 @@
   <!-- 2 -->
   <section class="stage">
     <div class="wrap">
-      <div class="tag"><span class="num">2</span><span>A conta dobrada</span><span class="rule"></span></div>
-      <h2>Na assinatura. E de novo no <em>retrabalho.<svg class="ul" viewBox="0 0 200 14" preserveAspectRatio="none" aria-hidden="true"><path d="M4 9 C60 3 150 3 196 8" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></em></h2>
-      <p class="sub">Fazer o nosso era caro e lento — <b>até a IA mudar isso.</b> Em 2026, 32% das organizações já deixaram de comprar software para construí-lo.</p>
-      <div class="src"><span class="dot"></span><span>Fonte: <a href="https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai" target="_blank" rel="noopener">McKinsey — The State of AI, 2026</a></span></div>
+      <h2>Custa na assinatura. E de novo no <em>retrabalho.<svg class="ul" viewBox="0 0 200 14" preserveAspectRatio="none" aria-hidden="true"><path d="M4 9 C60 3 150 3 196 8" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></em></h2>
+      <p class="sub">Fazer o nosso era caro e lento, <b>até a IA mudar isso.</b> Em 2026, 32% das organizações já deixaram de comprar software para construí-lo.</p>
+      <div class="src"><span class="dot"></span><span>Fonte: <a href="https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai" target="_blank" rel="noopener">McKinsey, The State of AI, 2026</a></span></div>
     </div>
     <div class="scene">
       <svg viewBox="0 0 520 440" aria-hidden="true">
@@ -149,9 +148,8 @@
   <!-- 3 -->
   <section class="stage">
     <div class="wrap">
-      <div class="tag"><span class="num">3</span><span>A prova</span><span class="rule"></span></div>
       <h2>O nosso já existe: o <em>HF+.<svg class="ul" viewBox="0 0 200 14" preserveAspectRatio="none" aria-hidden="true"><path d="M4 9 C60 3 150 3 196 8" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></em></h2>
-      <p class="sub">Feito aqui dentro, por quem vive o problema. Já traz resultado para a operação — <b>uma ferramenta, um setor.</b> Só uma amostra.</p>
+      <p class="sub">Feito aqui dentro, por quem vive o problema. Já traz resultado para a operação, <b>uma ferramenta, um setor.</b> Uma amostra.</p>
     </div>
     <div class="scene">
       <svg viewBox="0 0 520 440" aria-hidden="true">
@@ -172,9 +170,8 @@
   <!-- 4 -->
   <section class="stage">
     <div class="wrap">
-      <div class="tag"><span class="num">4</span><span>Dentro de casa</span><span class="rule"></span></div>
       <h2>E não para na <em>operação.<svg class="ul" viewBox="0 0 200 14" preserveAspectRatio="none" aria-hidden="true"><path d="M4 9 C60 3 150 3 196 8" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></em></h2>
-      <p class="sub">Faturamento, comercial, cobrança, atendimento — <b>vários setores com as mesmas dores</b> a resolver, aqui dentro.</p>
+      <p class="sub">Financeiro, jurídico, engenharia e comercial. São <b>vários setores com muito a ganhar</b> quando têm as ferramentas certas.</p>
     </div>
     <div class="scene">
       <svg viewBox="0 0 520 440" aria-hidden="true">
@@ -183,10 +180,10 @@
         <circle class="in" cx="255" cy="220" r="32" fill="#1F8FBF"/>
         <path class="in" d="M242 220 h26 M255 207 v26" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
         <g font-family="Barlow" font-size="16" font-weight="600" fill="#10323D">
-          <g class="in" style="--i:2"><rect x="56" y="80" width="140" height="56" rx="14" fill="#fff" stroke="#10323D" stroke-width="4"/><text x="126" y="114" text-anchor="middle">faturamento</text></g>
+          <g class="in" style="--i:2"><rect x="56" y="80" width="140" height="56" rx="14" fill="#fff" stroke="#10323D" stroke-width="4"/><text x="126" y="114" text-anchor="middle">financeiro</text></g>
           <g class="in" style="--i:3"><rect x="326" y="82" width="150" height="56" rx="14" fill="#fff" stroke="#10323D" stroke-width="4"/><text x="401" y="116" text-anchor="middle">comercial</text></g>
-          <g class="in" style="--i:4"><rect x="54" y="308" width="134" height="56" rx="14" fill="#fff" stroke="#10323D" stroke-width="4"/><text x="121" y="342" text-anchor="middle">cobrança</text></g>
-          <g class="in" style="--i:5"><rect x="324" y="302" width="158" height="56" rx="14" fill="#fff" stroke="#10323D" stroke-width="4"/><text x="403" y="336" text-anchor="middle">atendimento</text></g>
+          <g class="in" style="--i:4"><rect x="54" y="308" width="134" height="56" rx="14" fill="#fff" stroke="#10323D" stroke-width="4"/><text x="121" y="342" text-anchor="middle">jurídico</text></g>
+          <g class="in" style="--i:5"><rect x="324" y="302" width="158" height="56" rx="14" fill="#fff" stroke="#10323D" stroke-width="4"/><text x="403" y="336" text-anchor="middle">engenharia</text></g>
         </g>
       </svg>
     </div>
@@ -195,9 +192,8 @@
   <!-- 5 -->
   <section class="stage">
     <div class="wrap">
-      <div class="tag"><span class="num">5</span><span>O ecossistema</span><span class="rule"></span></div>
       <h2>O que entendemos, <em>poucos entendem.<svg class="ul" viewBox="0 0 200 14" preserveAspectRatio="none" aria-hidden="true"><path d="M4 9 C60 3 150 3 196 8" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></em></h2>
-      <p class="sub">As mesmas dores existem em todo o ecossistema de saneamento. Daí não nasce só economia — nascem <b>novos negócios para o grupo.</b></p>
+      <p class="sub">As mesmas dores existem em todo o ecossistema de saneamento. Daí não nasce só economia, nascem <b>novos negócios para o grupo.</b></p>
     </div>
     <div class="scene">
       <svg viewBox="0 0 520 440" aria-hidden="true">
@@ -215,9 +211,8 @@
   <!-- 6 -->
   <section class="stage">
     <div class="wrap">
-      <div class="tag"><span class="num">6</span><span>A oportunidade</span><span class="rule"></span></div>
       <h2>O HF+ foi só uma <em>amostra.<svg class="ul" viewBox="0 0 200 14" preserveAspectRatio="none" aria-hidden="true"><path d="M4 9 C60 3 150 3 196 8" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></em></h2>
-      <p class="sub">A partir daqui, quase tudo é possível. Uma ferramenta já mudou um setor — <b>o conjunto é a oportunidade.</b></p>
+      <p class="sub">A partir daqui, quase tudo é possível. Uma ferramenta já mudou um setor. <b>O conjunto é a oportunidade.</b></p>
     </div>
     <div class="scene">
       <svg viewBox="0 0 520 440" aria-hidden="true">
